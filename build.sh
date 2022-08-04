@@ -7,17 +7,15 @@
 help()
 {
     echo ""
-    echo "Usage: $0 -p Palette -o Output -s Source"
-    printf "\n-p Name of the palette {frappe, mocha, macchiato, latte}"
+    echo "Usage: $0 -o Output -s Source"
     printf "\n-o Output Directory"
-    printf "\n-s Source file {relative path}"
+    printf "\n-s Source file"
     exit 1 # Exit script after printing help  
 }
 
-while getopts "p:o:s:" opt
+while getopts "o:s:" opt
 do
    case "$opt" in
-      p ) PALETTE="$OPTARG" ;;
       o ) OUT="$OPTARG" ;;
       s ) SOURCE="$OPTARG" ;;
       ? ) help ;; # Print help in case parameter is non-existent
@@ -25,7 +23,7 @@ do
 done
 
 # Print help in case parameters are empty
-if [ -z "$PALETTE" ] || [ -z "$OUT" ] || [ -z "$SOURCE" ]
+if [ -z "$OUT" ] || [ -z "$SOURCE" ]
 then
    echo "Some or all of the parameters are empty";
     help
@@ -38,13 +36,22 @@ fi
 #extract file extension
 FILE_EXT="${SOURCE##*.}"
 
+#function defined to build the file
+build(){
 #combine everything to get the output path
 OUTPUT="${OUT}/${PALETTE}.${FILE_EXT}"
 SCRIPT="${PALETTE}.sed"
-SAUCE="${OUT}/${SOURCE}"
-
-echo "$SCRIPT"
 
 #does the actual sed-fu 
-cat $SAUCE | sed -i -f $SCRIPT > $OUTPUT
-#sed -i -f $SCRIPT "$SAUCE" > $OUTPUT
+< "$SOURCE" sed -f "$SCRIPT" > "$OUTPUT"
+}
+
+#no arrays due to posix compliancy
+PALETTE=frappe
+build
+PALETTE=mocha
+build
+PALETTE=macchiato
+build
+PALETTE=latte
+build
